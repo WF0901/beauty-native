@@ -1,0 +1,188 @@
+.advisor-page {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.advisor-profile {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 18px;
+  align-items: center;
+  padding: 24px 28px;
+  color: #fff;
+  background: #17483f;
+}
+
+.advisor-profile__avatar,
+.message__avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #17483f;
+  background: #dff5ef;
+  font-weight: 900;
+}
+
+.advisor-profile__avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 14px;
+}
+
+.advisor-profile__name,
+.advisor-profile__note {
+  display: block;
+}
+
+.advisor-profile__name {
+  font-size: 28px;
+  font-weight: 800;
+}
+
+.advisor-profile__note {
+  margin-top: 7px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 21px;
+}
+
+.advisor-profile__human {
+  width: 90px;
+  height: 58px;
+  margin: 0;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.12);
+  font-size: 22px;
+  line-height: 58px;
+}
+
+.advisor-safety {
+  padding: 14px;
+  color: #77651c;
+  background: #fff7d9;
+  text-align: center;
+  font-size: 21px;
+}
+
+.message-list {
+  min-height: 0;
+  flex: 1;
+  padding: 26px 24px;
+}
+
+.message {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  margin-bottom: 24px;
+}
+
+.message--user {
+  justify-content: flex-end;
+}
+
+.message__avatar {
+  width: 54px;
+  height: 54px;
+  flex: 0 0 54px;
+  border-radius: 10px;
+  font-size: 20px;
+}
+
+.message__bubble {
+  max-width: 79%;
+  padding: 20px 22px;
+  border: 1px solid #e0e8e5;
+  border-radius: 6px 16px 16px;
+  background: #fff;
+  font-size: 25px;
+  line-height: 1.65;
+}
+
+.message--user .message__bubble {
+  color: #fff;
+  background: #087d6f;
+  border-color: #087d6f;
+  border-radius: 16px 6px 16px 16px;
+}
+
+.message__bubble--risk {
+  border-color: #e3a28f;
+  background: #fff4ef;
+}
+
+.recommendation-card {
+  display: flex;
+  flex-direction: column;
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid #e4ebe8;
+}
+
+.recommendation-card__badge {
+  width: fit-content;
+  padding: 5px 10px;
+  border-radius: 6px;
+  color: #087d6f;
+  background: #e4f4ef;
+  font-size: 20px;
+}
+
+.recommendation-card__name {
+  margin-top: 12px;
+  font-weight: 800;
+}
+
+.recommendation-card__meta {
+  margin: 8px 0 16px;
+  color: #d95738;
+  font-size: 22px;
+}
+
+.quick-list {
+  width: 100%;
+  padding: 0 24px 18px;
+  white-space: nowrap;
+}
+
+.quick-list button {
+  display: inline-flex;
+  width: auto;
+  height: 60px;
+  margin: 0 12px 0 0;
+  padding: 0 20px;
+  border: 1px solid #cfe2dc;
+  border-radius: 10px;
+  color: #075f56;
+  background: #fff;
+  font-size: 22px;
+  line-height: 60px;
+}
+
+.composer {
+  display: grid;
+  grid-template-columns: 1fr 108px;
+  gap: 14px;
+  padding: 18px 24px calc(18px + env(safe-area-inset-bottom));
+  border-top: 1px solid #e1e8e5;
+  background: #fff;
+}
+
+.composer input {
+  height: 70px;
+  padding: 0 22px;
+  border-radius: 12px;
+  background: #f2f5f4;
+  font-size: 25px;
+}
+
+.composer button {
+  height: 70px;
+  margin: 0;
+  border-radius: 12px;
+  color: #fff;
+  background: #087d6f;
+  font-size: 24px;
+  line-height: 70px;
+}

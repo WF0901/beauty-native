@@ -1,0 +1,14 @@
+{
+  "miniprogramRoot": "dist/",
+  "projectname": "到店服务小程序",
+  "description": "多行业到店服务 SaaS 顾客端",
+  "appid": "touristappid",
+  "setting": {
+    "es6": true,
+    "enhance": true,
+    "compileHotReLoad": true,
+    "postcss": true,
+    "minified": false
+  },
+  "compileType": "miniprogram"
+}

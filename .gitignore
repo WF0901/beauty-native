@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build output
+dist/
+wechat-miniapp/dist/
+wechat-miniapp/.swc/
+wechat-miniapp/node_modules/
+
+# Local environment
+.env
+.env.*
+!.env.example
+
+# Logs and caches
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.DS_Store
+Thumbs.db
+
+# Generated screenshots
+dashboard-screenshot.png
+prototype-screenshot.png
+

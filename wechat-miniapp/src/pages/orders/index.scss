@@ -1,0 +1,94 @@
+.order-filters {
+  display: flex;
+  gap: 12px;
+  padding: 22px 30px;
+  overflow-x: auto;
+  background: #fff;
+}
+
+.order-filters button {
+  width: auto;
+  height: 58px;
+  margin: 0;
+  padding: 0 24px;
+  border-radius: 10px;
+  color: #65716f;
+  background: #f2f5f4;
+  font-size: 23px;
+  line-height: 58px;
+}
+
+.order-filters button.active {
+  color: #fff;
+  background: #087d6f;
+}
+
+.order-list {
+  padding: 24px 30px;
+}
+
+.order-card {
+  margin-bottom: 20px;
+  padding: 24px;
+}
+
+.order-card__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #e5ebe8;
+}
+
+.order-card__name {
+  font-size: 30px;
+  font-weight: 800;
+}
+
+.order-card__status {
+  padding: 7px 12px;
+  border-radius: 7px;
+  font-size: 21px;
+  font-weight: 700;
+}
+
+.order-card__status--待到店 {
+  color: #087d6f;
+  background: #e4f4ef;
+}
+
+.order-card__status--已完成 {
+  color: #8a681b;
+  background: #fbf1d7;
+}
+
+.order-card__details {
+  display: grid;
+  gap: 15px;
+  padding: 20px 0;
+}
+
+.order-card__details view {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  color: #75817e;
+  font-size: 23px;
+}
+
+.order-card__details text:last-child {
+  color: #17211f;
+  font-weight: 700;
+}
+
+.order-card__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 14px;
+}
+
+.order-card__actions button {
+  width: 190px;
+  margin: 0;
+}

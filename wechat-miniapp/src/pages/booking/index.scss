@@ -1,0 +1,92 @@
+.service-selector {
+  display: grid;
+  gap: 16px;
+}
+
+.service-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22px 24px;
+}
+
+.service-option--active {
+  border-color: #087d6f;
+  box-shadow: inset 0 0 0 2px #087d6f;
+}
+
+.service-option__name,
+.service-option__meta {
+  display: block;
+}
+
+.service-option__name {
+  font-size: 28px;
+  font-weight: 800;
+}
+
+.service-option__meta {
+  margin-top: 8px;
+  color: #75817e;
+  font-size: 22px;
+}
+
+.service-option__price {
+  color: #d95738;
+  font-size: 30px;
+  font-weight: 800;
+}
+
+.booking-form {
+  overflow: hidden;
+}
+
+.picker-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 92px;
+  padding: 0 24px;
+  border-bottom: 1px solid #e5ebe8;
+}
+
+.booking-form picker:last-child .picker-row {
+  border-bottom: 0;
+}
+
+.picker-row text:last-child {
+  color: #087d6f;
+  font-weight: 700;
+}
+
+.booking-submit {
+  position: sticky;
+  bottom: 24px;
+  display: grid;
+  grid-template-columns: 1fr 240px;
+  gap: 22px;
+  align-items: center;
+  margin: 34px 30px 0;
+  padding: 20px 22px;
+}
+
+.booking-submit__label,
+.booking-submit__price {
+  display: block;
+}
+
+.booking-submit__label {
+  color: #75817e;
+  font-size: 21px;
+}
+
+.booking-submit__price {
+  margin-top: 5px;
+  color: #d95738;
+  font-size: 34px;
+  font-weight: 800;
+}
+
+.booking-submit .primary-button {
+  margin: 0;
+}

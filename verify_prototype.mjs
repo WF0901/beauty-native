@@ -70,6 +70,23 @@ const customerMobileLayout = await mobileAdmin.evaluate(() => ({
 }));
 await mobileAdmin.getByRole("button", { name: "重置 Mock" }).click();
 
+const receptionist = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
+listenForErrors(receptionist);
+await receptionist.goto(`${baseUrl}/admin`, { waitUntil: "domcontentloaded" });
+await receptionist.getByRole("button", { name: "前台小林" }).click();
+await receptionist.getByRole("button", { name: "进入门店前台工作台" }).click();
+const appointmentCardCount = await receptionist.locator(".appointment-card").count();
+await receptionist.getByPlaceholder("搜索顾客、手机号或服务").fill("赵女士");
+const appointmentSearchCount = await receptionist.locator(".appointment-card").count();
+await receptionist.locator(".appointment-card").first().getByRole("button", { name: "展开预约详情" }).click();
+const appointmentDetailsVisible = await receptionist.locator(".appointment-details").count();
+await receptionist.getByRole("button", { name: "清除预约搜索" }).click();
+const appointmentClearCount = await receptionist.locator(".appointment-card").count();
+const appointmentDesktopLayout = await receptionist.evaluate(() => ({
+  bodyWidth: document.body.scrollWidth,
+  viewportWidth: window.innerWidth,
+}));
+
 const customer = await browser.newPage({ viewport: { width: 390, height: 844 } });
 listenForErrors(customer);
 await customer.goto(`${baseUrl}/customer?merchant=2&store=2&customer=3`, { waitUntil: "domcontentloaded" });
@@ -106,6 +123,11 @@ console.log(JSON.stringify({
   staffMobileLayout,
   customerMobileLayout,
   persistedStaffName,
+  appointmentCardCount,
+  appointmentSearchCount,
+  appointmentDetailsVisible,
+  appointmentClearCount,
+  appointmentDesktopLayout,
   standaloneChrome,
   storeName,
   itemNames,

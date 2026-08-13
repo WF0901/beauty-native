@@ -1,5 +1,36 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
+import {
+  BadgeCheck,
+  BarChart3,
+  Bell,
+  Building2,
+  CalendarPlus,
+  CalendarDays,
+  CheckCircle2,
+  ChevronDown,
+  CircleHelp,
+  Clock3,
+  ClipboardList,
+  CreditCard,
+  FileClock,
+  Headphones,
+  LayoutDashboard,
+  LogOut,
+  MapPin,
+  MoreHorizontal,
+  Plus,
+  RotateCcw,
+  ScanLine,
+  Search,
+  Settings,
+  Sparkles,
+  Store,
+  UserRound,
+  Users,
+  WalletCards,
+  X,
+} from "lucide-react";
 
 const today = "2026-08-14";
 
@@ -545,6 +576,29 @@ const roleText = {
   admin: "商户管理员",
   receptionist: "收银/前台",
   technician: "技师",
+};
+
+const navIcons = {
+  dashboard: LayoutDashboard,
+  merchants: Building2,
+  billing: CreditCard,
+  industry_templates: Sparkles,
+  logs: FileClock,
+  stores: Store,
+  staff: Users,
+  items: ClipboardList,
+  customers: UserRound,
+  reports: BarChart3,
+  appointments: CalendarDays,
+  orders: ScanLine,
+  my_schedule: CalendarDays,
+  service_history: ClipboardList,
+  profile: UserRound,
+  home: LayoutDashboard,
+  advisor: Sparkles,
+  bookings: Plus,
+  my_orders: ClipboardList,
+  cards: CreditCard,
 };
 
 function nextId(collection) {
@@ -1256,10 +1310,10 @@ function App() {
       <div className={`app-shell ${state.currentView === "customer" ? "customer-shell" : ""}`}>
         <aside className="sidebar">
           <div className="brand">
-            <div className="brand-mark">服</div>
+            <div className="brand-mark"><Store size={20} strokeWidth={2.2} /></div>
             <div>
-              <h1>到店服务 SaaS</h1>
-              <p>多行业经营平台</p>
+              <h1>到店管家</h1>
+              <p>门店经营管理</p>
             </div>
           </div>
 
@@ -1269,7 +1323,7 @@ function App() {
               <strong>{sidebarEntity.name}</strong>
               <small>{sidebarEntity.note}</small>
             </div>
-            <span className="account-chevron">⌄</span>
+            <ChevronDown className="account-chevron" size={15} />
           </div>
 
           <span className="nav-section-label">{state.currentView === "platform" ? "平台管理" : state.currentView === "customer" ? "顾客服务" : "经营管理"}</span>
@@ -1282,14 +1336,15 @@ function App() {
           </nav>
 
           <div className="sidebar-utilities">
-            <button onClick={() => notify("帮助中心正在准备中")}><span>?</span>帮助中心</button>
-            <button onClick={() => notify("已为你联系平台客服")}><span>◌</span>平台客服</button>
-            <button onClick={() => notify("系统设置将在下一版开放")}><span>⚙</span>系统设置</button>
+            <button onClick={() => notify("帮助中心正在准备中")}><CircleHelp size={17} />帮助中心</button>
+            <button onClick={() => notify("已为你联系平台客服")}><Headphones size={17} />平台客服</button>
+            <button onClick={() => notify("系统设置将在下一版开放")}><Settings size={17} />系统设置</button>
           </div>
 
           <div className="sidebar-footer">
             <span className="footer-avatar">{activeAccount.title.slice(0, 1)}</span>
             <div><strong>{activeAccount.title}</strong><small>{activeAccount.subtitle}</small></div>
+            <button className="sidebar-icon-button" title="退出登录" aria-label="退出登录" onClick={logout}><LogOut size={16} /></button>
           </div>
         </aside>
 
@@ -1334,13 +1389,15 @@ function App() {
                 <span>{roleProfiles[state.currentView].label}</span>
                 <strong>{activeAccount.title}</strong>
               </div>
-              <button className="ghost-button" onClick={logout}>退出登录</button>
-              <button className="ghost-button" onClick={resetData}>
-                重置 Mock
+              <button className="icon-button topbar-icon-button" title="通知" aria-label="通知中心" onClick={() => notify("暂无新的经营通知")}>
+                <Bell size={18} />
+              </button>
+              <button className="icon-button topbar-icon-button" title="重置演示数据" aria-label="重置 Mock" onClick={resetData}>
+                <RotateCcw size={17} />
               </button>
               {meta.modal && (
                 <button className="primary-button" onClick={() => openModal(meta.modal)}>
-                  {meta.action}
+                  <Plus size={16} />{meta.action}
                 </button>
               )}
             </div>
@@ -1444,24 +1501,7 @@ function App() {
       />
 
       <div className={`toast ${toast ? "show" : ""}`}>{toast}</div>
-      {state.currentView === "merchant" && state.activePage === "dashboard" && <SupportDock notify={notify} />}
     </>
-  );
-}
-
-function SupportDock({ notify }) {
-  return (
-    <aside className="support-dock" aria-label="咨询服务">
-      <img
-        src="/images/support-consultant.jpg"
-        alt="客户顾问头像"
-      />
-      <span className="support-online">在线</span>
-      <div className="support-actions">
-        <button title="微信咨询" onClick={() => notify("微信咨询二维码已发送给当前账号")}><span>◉</span>微信咨询</button>
-        <button title="电话咨询" onClick={() => notify("客服热线：400-800-2026")}><span>☎</span>电话咨询</button>
-      </div>
-    </aside>
   );
 }
 
@@ -1523,10 +1563,11 @@ function LoginView({ accounts, onLogin }) {
   );
 }
 
-function NavButton({ active, page, icon, onClick, children }) {
+function NavButton({ active, page, onClick, children }) {
+  const Icon = navIcons[page] || LayoutDashboard;
   return (
     <button className={`persona-button ${active ? "active" : ""}`} data-page={page} onClick={() => onClick(page)}>
-      <span className="nav-icon">{icon}</span>
+      <span className="nav-icon"><Icon size={18} strokeWidth={1.9} /></span>
       {children}
     </button>
   );
@@ -1535,9 +1576,8 @@ function NavButton({ active, page, icon, onClick, children }) {
 function MetricCard({ label, value, note }) {
   return (
     <article className="metric-card">
-      <span>{label}</span>
-      <strong>{value}</strong>
-      <small>{note}</small>
+      <div className="metric-label"><span>{label}</span><BarChart3 size={16} /></div>
+      <div className="metric-value-row"><strong>{value}</strong><small>{note}</small></div>
     </article>
   );
 }
@@ -1978,6 +2018,9 @@ function CustomerDirectoryView({ state, helpers, compact = false, onEdit }) {
 }
 
 function StaffView({ state, helpers, openModal, setState, startVerify, cancelOrder, page }) {
+  const [appointmentQuery, setAppointmentQuery] = useState("");
+  const [expandedOrderId, setExpandedOrderId] = useState(null);
+
   if (page === "orders") {
     return <OrderVerificationView state={state} helpers={helpers} startVerify={startVerify} />;
   }
@@ -1986,40 +2029,67 @@ function StaffView({ state, helpers, openModal, setState, startVerify, cancelOrd
   }
 
   const hours = Array.from({ length: 13 }, (_, index) => 9 + index);
-  const filteredOrders = helpers.currentStoreOrders().filter((order) => {
-    if (state.calendarStatus !== "all" && order.status !== state.calendarStatus) return false;
+  const normalizedQuery = appointmentQuery.trim().toLowerCase();
+  const periodOrders = helpers.currentStoreOrders().filter((order) => {
     if (state.technicianFilter !== "all" && order.technicianId !== Number(state.technicianFilter)) return false;
-    if (state.calendarView === "today") return order.appointmentStartAt.startsWith(today);
-    return order.appointmentStartAt.slice(0, 10) >= today;
+    if (state.calendarView === "today" && !order.appointmentStartAt.startsWith(today)) return false;
+    if (state.calendarView === "week" && order.appointmentStartAt.slice(0, 10) < today) return false;
+    if (!normalizedQuery) return true;
+    const customer = helpers.getCustomer(order.customerId);
+    const item = helpers.getItem(order.serviceItemId);
+    const technician = helpers.getStaff(order.technicianId);
+    return [customer?.name, customer?.phone, item?.name, technician?.name]
+      .some((value) => value?.toLowerCase().includes(normalizedQuery));
   });
+  const filteredOrders = periodOrders.filter((order) => state.calendarStatus === "all" || order.status === state.calendarStatus);
+  const pendingCount = periodOrders.filter((order) => order.status === "pending").length;
+  const completedCount = periodOrders.filter((order) => order.status === "completed").length;
+  const bookedMinutes = periodOrders
+    .filter((order) => order.status !== "cancelled")
+    .reduce((sum, order) => sum + helpers.getItem(order.serviceItemId).durationMinutes, 0);
+  const dateTitle = state.calendarView === "today" ? "2026年8月14日 星期五" : "8月14日 - 8月20日";
 
   function setCalendarField(field, value) {
     setState((current) => ({ ...current, [field]: value }));
   }
 
   return (
-    <section className="view active">
-      <section className="panel">
-        <div className="panel-header calendar-header">
-          <div>
-            <h3>预约日历</h3>
-            <p>门店员工查看预约、手动新增、到店核销。</p>
+    <section className="view active appointment-calendar-view">
+      <section className="panel calendar-panel">
+        <div className="calendar-heading">
+          <div className="calendar-title-block">
+            <span className="calendar-title-icon"><CalendarDays size={20} /></span>
+            <div>
+              <h3>预约日历</h3>
+              <p><MapPin size={13} />{helpers.store?.name || "当前门店"}</p>
+            </div>
           </div>
-          <button className="secondary-button" onClick={() => openModal("order")}>
-            新增预约
+          <strong className="calendar-date-title">{dateTitle}</strong>
+        </div>
+
+        <div className="calendar-commandbar">
+          <div className="calendar-view-toggle" aria-label="日历视图">
+            <button className={state.calendarView === "today" ? "active" : ""} onClick={() => setCalendarField("calendarView", "today")}>
+              <CalendarDays size={16} />今日
+            </button>
+            <button className={state.calendarView === "week" ? "active" : ""} onClick={() => setCalendarField("calendarView", "week")}>
+              <CalendarDays size={16} />本周
+            </button>
+          </div>
+          <label className="calendar-search">
+            <Search size={16} />
+            <input aria-label="搜索顾客或服务" placeholder="搜索顾客、手机号或服务" value={appointmentQuery} onChange={(event) => setAppointmentQuery(event.target.value)} />
+            {appointmentQuery && <button title="清除搜索" aria-label="清除预约搜索" onClick={() => setAppointmentQuery("")}><X size={15} /></button>}
+          </label>
+          <button className="primary-button calendar-create-button" onClick={() => openModal("order")}>
+            <CalendarPlus size={17} />新增预约
           </button>
         </div>
 
-        <div className="filters">
-          <label>
-            视图
-            <select value={state.calendarView} onChange={(event) => setCalendarField("calendarView", event.target.value)}>
-              <option value="today">今日</option>
-              <option value="week">本周</option>
-            </select>
-          </label>
-          <label>
-            技师
+        <div className="calendar-filterbar">
+          <div className="calendar-selectors">
+            <label>
+              <span>技师</span>
             <select value={state.technicianFilter} onChange={(event) => setCalendarField("technicianFilter", event.target.value)}>
               <option value="all">全部技师</option>
               {helpers.technicians.map((staffer) => (
@@ -2028,7 +2098,14 @@ function StaffView({ state, helpers, openModal, setState, startVerify, cancelOrd
                 </option>
               ))}
             </select>
-          </label>
+            </label>
+            <label>
+              <span>门店</span>
+              <select aria-label="预约日历门店" value={helpers.store?.id || ""} disabled>
+                <option value={helpers.store?.id || ""}>{helpers.store?.name || "暂无门店"}</option>
+              </select>
+            </label>
+          </div>
           <div className="status-tabs">
             {[
               ["all", "全部"],
@@ -2045,6 +2122,13 @@ function StaffView({ state, helpers, openModal, setState, startVerify, cancelOrd
               </button>
             ))}
           </div>
+        </div>
+
+        <div className="calendar-summary" aria-label="预约概览">
+          <div><span>当前预约</span><strong>{periodOrders.length}</strong></div>
+          <div><span>待到店</span><strong>{pendingCount}</strong></div>
+          <div><span>已完成</span><strong>{completedCount}</strong></div>
+          <div><span>已占用</span><strong>{Math.floor(bookedMinutes / 60)}h {bookedMinutes % 60 ? `${bookedMinutes % 60}m` : ""}</strong></div>
         </div>
 
         <div className="calendar-grid">
@@ -2068,10 +2152,15 @@ function StaffView({ state, helpers, openModal, setState, startVerify, cancelOrd
                         helpers={helpers}
                         startVerify={startVerify}
                         cancelOrder={cancelOrder}
+                        expanded={expandedOrderId === order.id}
+                        onToggle={() => setExpandedOrderId((current) => current === order.id ? null : order.id)}
+                        showDate={state.calendarView === "week"}
                       />
                     ))
                   ) : (
-                    <span className="empty-slot">该时段暂无预约</span>
+                    <button className="empty-slot" onClick={() => openModal("order")}>
+                      <Plus size={14} />空闲时段 · 新增预约
+                    </button>
                   )}
                 </div>
               );
@@ -2270,45 +2359,60 @@ function ServiceLedgerView({ orders, helpers }) {
   );
 }
 
-function AppointmentCard({ order, helpers, startVerify, cancelOrder }) {
+function AppointmentCard({ order, helpers, startVerify, cancelOrder, expanded, onToggle, showDate }) {
   const item = helpers.getItem(order.serviceItemId);
   const customer = helpers.getCustomer(order.customerId);
   const technician = helpers.getStaff(order.technicianId);
   const start = order.appointmentStartAt.slice(11, 16);
   const end = order.appointmentEndAt.slice(11, 16);
   const phoneTail = customer.phone.slice(-4);
+  const paymentText = order.paymentStatus === "deposit_paid"
+    ? `已付定金 ${yuan(order.paidAmount)}`
+    : order.paymentStatus === "paid"
+      ? `已支付 ${yuan(order.paidAmount)}`
+      : "未支付";
 
   return (
-    <article className={`appointment-card ${order.status}`}>
-      <div>
-        <strong>{item.name}</strong>
-        <small>
-          {technician.name} · {start}-{end}
-        </small>
+    <article className={`appointment-card ${order.status} ${expanded ? "expanded" : ""}`}>
+      <div className="appointment-summary" role="button" tabIndex={0} onClick={onToggle} onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") onToggle();
+      }}>
+        <span className="appointment-avatar"><UserRound size={18} /></span>
+        <div className="appointment-content">
+          <div className="appointment-customer-row">
+            <strong>{customer.name}</strong>
+            <span>{customer.phone.slice(0, 3)}****{phoneTail}</span>
+            {showDate && <span className="appointment-date">{order.appointmentStartAt.slice(5, 10).replace("-", "月")}日</span>}
+          </div>
+          <h4>{item.name}</h4>
+          <div className="appointment-meta">
+            <span><Clock3 size={14} />{start}-{end} · {item.durationMinutes}min</span>
+            <span><UserRound size={14} />{technician.name}</span>
+            <span className={order.paymentStatus === "unpaid" ? "payment-unpaid" : ""}><WalletCards size={14} />{paymentText}</span>
+          </div>
+        </div>
       </div>
-      <div>
-        <span>
-          {customer.name} · {phoneTail}
-        </span>
-        <small>
-          {statusText[order.paymentStatus]} · {order.remark || "无备注"}
-        </small>
-      </div>
-      <div className="inline-actions">
+      <div className="appointment-actions">
         <span className={`tag ${order.status === "pending" ? "green" : order.status === "completed" ? "gold" : "red"}`}>
           {statusText[order.status]}
         </span>
         {order.status === "pending" && (
-          <>
-            <button className="mini-button" data-verify-order={order.id} onClick={() => startVerify(order.id)}>
-              核销
-            </button>
-            <button className="mini-button alt" data-cancel-order={order.id} onClick={() => cancelOrder(order.id)}>
-              取消
-            </button>
-          </>
+          <button className="mini-button" data-verify-order={order.id} onClick={() => startVerify(order.id)}>
+            <CheckCircle2 size={15} />核销
+          </button>
         )}
+        <button className="icon-action" title={expanded ? "收起预约详情" : "展开预约详情"} aria-label={expanded ? "收起预约详情" : "展开预约详情"} onClick={onToggle}>
+          <MoreHorizontal size={17} />
+        </button>
       </div>
+      {expanded && (
+        <div className="appointment-details">
+          <div><span>预约编号</span><strong>SO{String(order.id).padStart(6, "0")}</strong></div>
+          <div><span>预约来源</span><strong>{order.source === "mini_program" ? "顾客小程序" : "门店手工创建"}</strong></div>
+          <div className="appointment-remark"><span>服务备注</span><strong>{order.remark || "暂无特殊备注"}</strong></div>
+          {order.status === "pending" && <button className="text-danger-button" data-cancel-order={order.id} onClick={() => cancelOrder(order.id)}>取消预约</button>}
+        </div>
+      )}
     </article>
   );
 }

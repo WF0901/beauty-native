@@ -11,6 +11,7 @@
     "build:weapp": "pnpm --dir wechat-miniapp run build:weapp"
   },
   "dependencies": {
+    "lucide-react": "^1.31.0",
     "qrcode.react": "^4.2.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"

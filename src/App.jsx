@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 
 const today = "2026-08-14";
@@ -249,25 +249,49 @@ const initialState = {
   },
 };
 
+const STATE_STORAGE_KEY = "beauty-saas-mvp-state-v1";
+
+function readPersistedState() {
+  if (typeof window === "undefined") return structuredClone(initialState);
+  try {
+    const stored = window.localStorage.getItem(STATE_STORAGE_KEY);
+    if (!stored) return structuredClone(initialState);
+    const parsed = JSON.parse(stored);
+    return {
+      ...structuredClone(initialState),
+      ...parsed,
+      activeModal: null,
+      verifyOrderId: null,
+      editingItemId: null,
+      editingStoreId: null,
+      editingStaffId: null,
+      editingCustomerId: null,
+    };
+  } catch {
+    return structuredClone(initialState);
+  }
+}
+
 function getInitialStateForRoute() {
-  if (!window.location.pathname.startsWith("/customer")) return initialState;
+  const baseState = readPersistedState();
+  if (!window.location.pathname.startsWith("/customer")) return baseState;
 
   const params = new URLSearchParams(window.location.search);
-  const requestedMerchantId = Number(params.get("merchant")) || initialState.activeMerchantId;
-  const merchant = initialState.merchants.find((item) => item.id === requestedMerchantId) ?? initialState.merchants[0];
-  const merchantStores = initialState.stores.filter((store) => store.merchantId === merchant.id);
+  const requestedMerchantId = Number(params.get("merchant")) || baseState.activeMerchantId;
+  const merchant = baseState.merchants.find((item) => item.id === requestedMerchantId) ?? baseState.merchants[0];
+  const merchantStores = baseState.stores.filter((store) => store.merchantId === merchant.id);
   const requestedStoreId = Number(params.get("store"));
   const store = merchantStores.find((item) => item.id === requestedStoreId)
     ?? merchantStores.find((item) => item.isActive !== false)
     ?? merchantStores[0];
-  const merchantCustomers = initialState.customers.filter((customer) => customer.merchantId === merchant.id);
+  const merchantCustomers = baseState.customers.filter((customer) => customer.merchantId === merchant.id);
   const requestedCustomerId = Number(params.get("customer"));
   const customer = merchantCustomers.find((item) => item.id === requestedCustomerId) ?? merchantCustomers[0];
   const requestedPage = params.get("page");
   const customerPages = new Set(["home", "advisor", "bookings", "my_orders", "cards"]);
 
   return {
-    ...initialState,
+    ...baseState,
     currentView: "customer",
     activePage: customerPages.has(requestedPage) ? requestedPage : "home",
     activeMerchantId: merchant.id,
@@ -606,6 +630,23 @@ function App() {
   const [showCustomerDemo, setShowCustomerDemo] = useState(false);
   const [customerDemoUrlOverride, setCustomerDemoUrlOverride] = useState("");
   const activeAccount = mockAccounts.find((account) => account.id === state.currentAccountId) ?? mockAccounts[1];
+
+  useEffect(() => {
+    try {
+      const {
+        activeModal,
+        verifyOrderId,
+        editingItemId,
+        editingStoreId,
+        editingStaffId,
+        editingCustomerId,
+        ...persistableState
+      } = state;
+      window.localStorage.setItem(STATE_STORAGE_KEY, JSON.stringify(persistableState));
+    } catch {
+      // Local storage is optional in restricted browser previews.
+    }
+  }, [state]);
 
   const activeMerchant = state.merchants.find((merchant) => merchant.id === state.activeMerchantId) ?? state.merchants[0];
   const merchantStores = state.stores.filter((store) => store.merchantId === activeMerchant?.id);
@@ -1501,6 +1542,17 @@ function MetricCard({ label, value, note }) {
   );
 }
 
+function EmptyState({ icon = "○", title, description, actionLabel, onAction }) {
+  return (
+    <div className="empty-state empty-state-guided">
+      <span className="empty-state-icon" aria-hidden="true">{icon}</span>
+      <strong>{title}</strong>
+      {description && <p>{description}</p>}
+      {actionLabel && <button className="secondary-button" onClick={onAction}>{actionLabel}</button>}
+    </div>
+  );
+}
+
 function PlatformView({ state, helpers, openModal, page }) {
   if (page === "billing") return <PlatformBillingView state={state} />;
   if (page === "industry_templates") return <IndustryTemplateView />;
@@ -1543,8 +1595,8 @@ function PlatformView({ state, helpers, openModal, page }) {
             新增商户
           </button>
         </div>
-        <div className="table-wrap">
-          <table>
+        {state.merchants.length ? <div className="table-wrap">
+          <table className="responsive-table platform-overview-table">
             <thead>
               <tr>
                 <th>商户</th>
@@ -1563,24 +1615,24 @@ function PlatformView({ state, helpers, openModal, page }) {
                 const tagClass = merchant.status === "active" ? "green" : merchant.status === "trial" ? "gold" : "red";
                 return (
                   <tr key={merchant.id}>
-                    <td>
+                    <td data-label="商户">
                       <strong>{merchant.name}</strong>
                       <br />
                       <span className="muted">{merchant.contactPhone}</span>
                     </td>
-                    <td>{merchant.contactName}</td>
-                    <td>{storeCount}</td>
-                    <td>{merchant.packageEnd}</td>
-                    <td>
+                    <td data-label="联系人">{merchant.contactName}</td>
+                    <td data-label="门店数">{storeCount}</td>
+                    <td data-label="套餐到期">{merchant.packageEnd}</td>
+                    <td data-label="状态">
                       <span className={`tag ${tagClass}`}>{statusText[merchant.status]}</span>
                     </td>
-                    <td>{yuan(gmv)}</td>
+                    <td data-label="GMV">{yuan(gmv)}</td>
                   </tr>
                 );
               })}
             </tbody>
           </table>
-        </div>
+        </div> : <EmptyState icon="◇" title="还没有商户数据" description="创建商户后，平台 GMV、套餐和订单数据会在这里汇总。" actionLabel="创建第一个商户" onAction={() => openModal("merchant")} />}
       </section>
     </section>
   );
@@ -1596,22 +1648,26 @@ function PlatformMerchantsView({ state, openModal }) {
         </div>
         <button className="secondary-button" onClick={() => openModal("merchant")}>新增商户</button>
       </div>
-      <div className="table-wrap">
-        <table>
-          <thead><tr><th>商户</th><th>联系人</th><th>套餐到期</th><th>状态</th><th>平台操作</th></tr></thead>
-          <tbody>
-            {state.merchants.map((merchant) => (
-              <tr key={merchant.id}>
-                <td><strong>{merchant.name}</strong><br /><span className="muted">{merchant.contactPhone}</span></td>
-                <td>{merchant.contactName}</td>
-                <td>{merchant.packageEnd}</td>
-                <td><span className={`tag ${merchant.status === "active" ? "green" : "gold"}`}>{statusText[merchant.status]}</span></td>
-                <td><button className="text-button">管理套餐</button></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      {!state.merchants.length ? (
+          <EmptyState icon="◇" title="还没有入驻商户" description="先创建一个商户，配置套餐后即可开始经营。" actionLabel="创建第一个商户" onAction={() => openModal("merchant")} />
+      ) : (
+        <div className="table-wrap">
+          <table className="responsive-table merchant-tenant-table">
+            <thead><tr><th>商户</th><th>联系人</th><th>套餐到期</th><th>状态</th><th>平台操作</th></tr></thead>
+            <tbody>
+              {state.merchants.map((merchant) => (
+                <tr key={merchant.id}>
+                  <td data-label="商户"><strong>{merchant.name}</strong><br /><span className="muted">{merchant.contactPhone}</span></td>
+                  <td data-label="联系人">{merchant.contactName}</td>
+                  <td data-label="套餐到期">{merchant.packageEnd}</td>
+                  <td data-label="状态"><span className={`tag ${merchant.status === "active" ? "green" : "gold"}`}>{statusText[merchant.status]}</span></td>
+                  <td data-label="平台操作"><button className="text-button">管理套餐</button></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </section>
   );
 }
@@ -1804,9 +1860,9 @@ function MerchantModuleView({
     return (
       <section className="view active panel">
         <div className="panel-header"><div><h3>门店列表</h3><p>每个门店独立维护地址、电话与营业时间。</p></div><button className="secondary-button" onClick={() => openModal("store")}>新增门店</button></div>
-        <div className="entity-grid">
+        {helpers.merchantStores.length ? <div className="entity-grid">
           {helpers.merchantStores.map((store) => <article className="entity-card" key={store.id}><span className="entity-icon">店</span><div><h4>{store.name}</h4><p>{store.address}</p><small>{store.phone} · {store.businessHours}</small></div><div className="entity-actions"><span className={`tag ${store.isActive !== false ? "green" : ""}`}>{store.isActive !== false ? "营业中" : "已停业"}</span><button className="icon-action" title="编辑门店" aria-label={`编辑${store.name}`} onClick={() => openStoreEditor(store.id)}>✎</button></div></article>)}
-        </div>
+        </div> : <EmptyState icon="⌂" title="还没有门店" description="先添加门店地址和营业时间，顾客端才能展示和预约。" actionLabel="添加第一家门店" onAction={() => openModal("store")} />}
       </section>
     );
   }
@@ -1815,7 +1871,25 @@ function MerchantModuleView({
     return (
       <section className="view active panel">
         <div className="panel-header"><div><h3>员工账号</h3><p>岗位决定可见菜单，员工数据限制在所属门店。</p></div><button className="secondary-button" onClick={() => openModal("staff")}>新增员工</button></div>
-        <div className="table-wrap"><table><thead><tr><th>员工</th><th>所属门店</th><th>岗位</th><th>手机号</th><th>状态</th><th>操作</th></tr></thead><tbody>{helpers.merchantStaff.map((staffer) => <tr key={staffer.id}><td><strong>{staffer.name}</strong></td><td>{state.stores.find((store) => store.id === staffer.storeId)?.name}</td><td>{roleText[staffer.role]}</td><td>{staffer.phone}</td><td><span className={`tag ${staffer.isActive !== false ? "green" : ""}`}>{staffer.isActive !== false ? "启用" : "停用"}</span></td><td><button className="text-button" onClick={() => openStaffEditor(staffer.id)}>编辑</button></td></tr>)}</tbody></table></div>
+        {helpers.merchantStaff.length ? (
+          <div className="table-wrap">
+            <table className="responsive-table staff-table">
+              <thead><tr><th>员工</th><th>所属门店</th><th>岗位</th><th>手机号</th><th>状态</th><th>操作</th></tr></thead>
+              <tbody>
+                {helpers.merchantStaff.map((staffer) => (
+                  <tr key={staffer.id}>
+                    <td data-label="员工"><strong>{staffer.name}</strong></td>
+                    <td data-label="所属门店">{state.stores.find((store) => store.id === staffer.storeId)?.name}</td>
+                    <td data-label="岗位">{roleText[staffer.role]}</td>
+                    <td data-label="手机号">{staffer.phone}</td>
+                    <td data-label="状态"><span className={`tag ${staffer.isActive !== false ? "green" : ""}`}>{staffer.isActive !== false ? "启用" : "停用"}</span></td>
+                    <td data-label="操作"><button className="text-button" onClick={() => openStaffEditor(staffer.id)}>编辑</button></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : <EmptyState icon="♧" title="还没有员工账号" description="添加店长、前台或技师后，才能安排预约和核销。" actionLabel="添加第一个员工" onAction={() => openModal("staff")} />}
       </section>
     );
   }
@@ -1825,7 +1899,7 @@ function MerchantModuleView({
       <section className="view active panel">
         <div className="panel-header"><div><h3>服务项目</h3><p>控制小程序展示内容、价格和服务时长。</p></div><button className="secondary-button" onClick={() => openModal("item")}>新增项目</button></div>
         <aside className="industry-applied"><span>已应用行业模板</span><strong>{industryTemplates[state.industry].name}</strong><small>新增项目时只需勾选平台预置标签</small></aside>
-        <div className="catalog-grid">
+        {helpers.merchantItems.length ? <div className="catalog-grid">
           {helpers.merchantItems.map((item) => (
             <article className={`catalog-card ${item.isOnline ? "" : "offline"}`} key={item.id}>
               <div className="catalog-image" />
@@ -1844,7 +1918,7 @@ function MerchantModuleView({
               </div>
             </article>
           ))}
-        </div>
+        </div> : <EmptyState icon="✦" title="还没有服务项目" description="先上架一个服务项目，顾客端才有内容可以浏览和预约。" actionLabel="创建第一个项目" onAction={() => openModal("item")} />}
       </section>
     );
   }
@@ -1862,10 +1936,43 @@ function MerchantModuleView({
 
 function CustomerDirectoryView({ state, helpers, compact = false, onEdit }) {
   const customers = helpers.visibleCustomers || helpers.merchantCustomers;
+  const [query, setQuery] = useState("");
+  const normalizedQuery = query.trim().toLowerCase();
+  const filteredCustomers = customers.filter((customer) =>
+    !normalizedQuery || customer.name.toLowerCase().includes(normalizedQuery) || customer.phone.includes(normalizedQuery),
+  );
   return (
     <section className="view active panel">
-      <div className="panel-header"><div><h3>{compact ? "会员档案查询" : "会员管理"}</h3><p>顾客归属于商户，可跨门店累积消费记录。</p></div><input className="search-input" placeholder="搜索姓名或手机号" /></div>
-      <div className="table-wrap"><table><thead><tr><th>会员</th><th>常用门店</th><th>累计消费</th><th>订单数</th><th>最近到店</th>{onEdit && <th>操作</th>}</tr></thead><tbody>{customers.map((customer) => { const orders = state.orders.filter((order) => order.merchantId === helpers.merchant?.id && order.customerId === customer.id && (helpers.currentAccountStaff?.role !== "receptionist" || order.storeId === helpers.store?.id)); return <tr key={customer.id}><td><strong>{customer.name}</strong><br /><span className="muted">{customer.phone}</span></td><td>{state.stores.find((store) => store.id === customer.homeStoreId)?.name}</td><td>{yuan(customer.totalSpent)}</td><td>{orders.length}</td><td>{orders.at(-1)?.appointmentStartAt.slice(0, 10) || "暂无"}</td>{onEdit && <td><button className="text-button" onClick={() => onEdit(customer.id)}>编辑档案</button></td>}</tr>; })}</tbody></table></div>
+      <div className="panel-header">
+        <div><h3>{compact ? "会员档案查询" : "会员管理"}</h3><p>顾客归属于商户，可跨门店累积消费记录。</p></div>
+        <input className="search-input" aria-label="搜索会员" placeholder="搜索姓名或手机号" value={query} onChange={(event) => setQuery(event.target.value)} />
+      </div>
+      {!customers.length ? (
+        <EmptyState icon="◎" title="还没有会员档案" description="顾客完成首次预约后会自动进入会员池，也可以从预约流程中快速创建。" />
+      ) : !filteredCustomers.length ? (
+        <EmptyState icon="⌕" title="没有找到匹配会员" description="可以换一个姓名或手机号重新搜索。" actionLabel="清除搜索" onAction={() => setQuery("")} />
+      ) : (
+        <div className="table-wrap">
+          <table className="responsive-table customer-table">
+            <thead><tr><th>会员</th><th>常用门店</th><th>累计消费</th><th>订单数</th><th>最近到店</th>{onEdit && <th>操作</th>}</tr></thead>
+            <tbody>
+              {filteredCustomers.map((customer) => {
+                const orders = state.orders.filter((order) => order.merchantId === helpers.merchant?.id && order.customerId === customer.id && (helpers.currentAccountStaff?.role !== "receptionist" || order.storeId === helpers.store?.id));
+                return (
+                  <tr key={customer.id}>
+                    <td data-label="会员"><strong>{customer.name}</strong><br /><span className="muted">{customer.phone}</span></td>
+                    <td data-label="常用门店">{state.stores.find((store) => store.id === customer.homeStoreId)?.name}</td>
+                    <td data-label="累计消费">{yuan(customer.totalSpent)}</td>
+                    <td data-label="订单数">{orders.length}</td>
+                    <td data-label="最近到店">{orders.at(-1)?.appointmentStartAt.slice(0, 10) || "暂无"}</td>
+                    {onEdit && <td data-label="操作"><button className="text-button" onClick={() => onEdit(customer.id)}>编辑档案</button></td>}
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
     </section>
   );
 }
@@ -1997,6 +2104,7 @@ function OrderVerificationView({ state, helpers, startVerify }) {
             </article>
           );
         })}
+        {!pending.length && <EmptyState icon="✓" title="暂时没有待核销订单" description="顾客完成预约后，待到店订单会自动出现在这里。" />}
       </div>
     </section>
   );

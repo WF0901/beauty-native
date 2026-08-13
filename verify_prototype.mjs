@@ -40,6 +40,36 @@ await admin.waitForSelector(".merchant-hero");
 const secondMerchantTitle = await admin.locator(".sidebar-account strong").innerText();
 const secondMerchantItems = await admin.locator(".service-item h4").allTextContents();
 
+const mobileAdmin = await browser.newPage({ viewport: { width: 390, height: 844 } });
+listenForErrors(mobileAdmin);
+await mobileAdmin.goto(`${baseUrl}/admin`, { waitUntil: "domcontentloaded" });
+await mobileAdmin.evaluate(() => window.localStorage.removeItem("beauty-saas-mvp-state-v1"));
+await mobileAdmin.reload({ waitUntil: "domcontentloaded" });
+await mobileAdmin.getByRole("button", { name: "有赞测试美容店长" }).click();
+await mobileAdmin.getByRole("button", { name: "进入商户管理员工作台" }).click();
+await mobileAdmin.getByRole("button", { name: "员工管理", exact: true }).click();
+const staffMobileLayout = await mobileAdmin.evaluate(() => ({
+  bodyWidth: document.body.scrollWidth,
+  viewportWidth: window.innerWidth,
+  cardCount: document.querySelectorAll(".staff-table tbody tr").length,
+}));
+await mobileAdmin.locator(".staff-table tbody tr").filter({ hasText: "王技师" }).getByRole("button", { name: "编辑" }).click();
+const editedStaffName = `王技师-${Date.now().toString().slice(-4)}`;
+await mobileAdmin.getByLabel("员工姓名").fill(editedStaffName);
+await mobileAdmin.getByRole("button", { name: "保存修改" }).click();
+await mobileAdmin.reload({ waitUntil: "domcontentloaded" });
+await mobileAdmin.getByRole("button", { name: "有赞测试美容店长" }).click();
+await mobileAdmin.getByRole("button", { name: "进入商户管理员工作台" }).click();
+await mobileAdmin.getByRole("button", { name: "员工管理", exact: true }).click();
+const persistedStaffName = await mobileAdmin.locator(".staff-table tbody tr").filter({ hasText: editedStaffName }).count();
+await mobileAdmin.getByRole("button", { name: "会员管理", exact: true }).click();
+const customerMobileLayout = await mobileAdmin.evaluate(() => ({
+  bodyWidth: document.body.scrollWidth,
+  viewportWidth: window.innerWidth,
+  cardCount: document.querySelectorAll(".customer-table tbody tr").length,
+}));
+await mobileAdmin.getByRole("button", { name: "重置 Mock" }).click();
+
 const customer = await browser.newPage({ viewport: { width: 390, height: 844 } });
 listenForErrors(customer);
 await customer.goto(`${baseUrl}/customer?merchant=2&store=2&customer=3`, { waitUntil: "domcontentloaded" });
@@ -73,6 +103,9 @@ console.log(JSON.stringify({
   customerPersonaInAdmin,
   secondMerchantTitle,
   secondMerchantItems,
+  staffMobileLayout,
+  customerMobileLayout,
+  persistedStaffName,
   standaloneChrome,
   storeName,
   itemNames,
